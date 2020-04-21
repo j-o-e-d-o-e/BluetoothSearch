@@ -16,12 +16,13 @@ public class BluetoothReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         Log.d(TAG, "start discovery");
         String action = intent.getAction();
-        Device dev = null;
+        Device device = null;
         if (Objects.equals(action, BluetoothDevice.ACTION_FOUND)) {
-            BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-            dev = new Device(device.getName(), device.getAddress());
+            BluetoothDevice found = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            Log.d(TAG, "Device infos: " + found.getBluetoothClass());
+            device = new Device(found.getBluetoothClass().toString(), found.getName(), found.getAddress());
         }
-        listener.onMessage(action, dev);
+        listener.onMessage(action, device);
     }
 
     public void setListener(IListener listener) {

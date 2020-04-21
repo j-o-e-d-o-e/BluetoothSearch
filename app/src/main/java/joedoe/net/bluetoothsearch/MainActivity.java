@@ -18,7 +18,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,7 +26,8 @@ public class MainActivity extends AppCompatActivity {
     public static final int REQUEST_ENABLE_BLUETOOTH = 11;
     private final BluetoothAdapter bAdapter = BluetoothAdapter.getDefaultAdapter();
     private final BluetoothReceiver bReceiver = new BluetoothReceiver();
-    List<Device> devices = Bootstrap.createDummies();
+    @SuppressWarnings("FieldMayBeFinal")
+    private List<Device> devices = Bootstrap.createDummies();
     private DevicesAdapter adapter;
     private Button btn;
 
@@ -47,9 +47,10 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View view) {
                 if (bAdapter != null && bAdapter.isEnabled()) {
                     if (checkCoarseLocationPermission()) {
+//                        Device.resetCount();
                         adapter.clear();
-                        Device.resetCount();
                         bAdapter.startDiscovery();
+                        checkBluetoothState();
                     }
                 } else {
                     checkBluetoothState();
@@ -65,42 +66,18 @@ public class MainActivity extends AppCompatActivity {
                         if (!devices.contains(device)) {
                             adapter.add(device);
                         }
-                        for(Device d : devices)
-                            Log.d(TAG, d.toString());
                         break;
                     case BluetoothAdapter.ACTION_DISCOVERY_FINISHED:
-                        btn.setText("Scanning Bluetooth Devices");
+                        btn.setText("Search");
                         break;
                     case BluetoothAdapter.ACTION_DISCOVERY_STARTED:
-                        btn.setText("Scanning in progress");
+                        btn.setText("Searching ...");
                         break;
                 }
             }
         });
         checkBluetoothState();
-    }
-
-    private void checkBluetoothState() {
-        Log.d(TAG, "checkBluetoothState");
-        if (bAdapter == null) {
-            Toast.makeText(this, "Bluetooth is not supported on your device!",
-                    Toast.LENGTH_SHORT).show();
-        } else {
-            if (bAdapter.isEnabled()) {
-                if (bAdapter.isDiscovering()) {
-                    Toast.makeText(this, "Device discovering process ...",
-                            Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "Bluetooth is disabled", Toast.LENGTH_SHORT).show();
-                    btn.setEnabled(true);
-                }
-            } else {
-                Toast.makeText(this, "You need to enable Bluetooth",
-                        Toast.LENGTH_SHORT).show();
-                Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                startActivityForResult(enableIntent, REQUEST_ENABLE_BLUETOOTH);
-            }
-        }
+        checkCoarseLocationPermission();
     }
 
     private boolean checkCoarseLocationPermission() {
@@ -112,6 +89,29 @@ public class MainActivity extends AppCompatActivity {
             return false;
         } else {
             return true;
+        }
+    }
+
+    private void checkBluetoothState() {
+        Log.d(TAG, "checkBluetoothState");
+        if (bAdapter == null) {
+            Toast.makeText(this, "Bluetooth is not supported for your device",
+                    Toast.LENGTH_SHORT).show();
+        } else {
+            if (bAdapter.isEnabled()) {
+                if (bAdapter.isDiscovering()) {
+                    Toast.makeText(this, "Device discovering process ...",
+                            Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "Bluetooth is enabled", Toast.LENGTH_SHORT).show();
+                    btn.setEnabled(true);
+                }
+            } else {
+                Toast.makeText(this, "You need to enable Bluetooth",
+                        Toast.LENGTH_SHORT).show();
+                Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                startActivityForResult(enableIntent, REQUEST_ENABLE_BLUETOOTH);
+            }
         }
     }
 
@@ -146,10 +146,10 @@ public class MainActivity extends AppCompatActivity {
         Log.d(TAG, "onRequestPermissionsResult");
         if (requestCode == REQUEST_ACCESS_COARSE_LOCATION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Toast.makeText(this, "Access coarse location allowed. You can scan Bluetooth devices",
+                Toast.makeText(this, "Access coarse location allowed. You can search for devices",
                         Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(this, "Access coarse location forbidden. You can't scan Bluetooth devices",
+                Toast.makeText(this, "Access coarse location forbidden. You can't search for devices",
                         Toast.LENGTH_SHORT).show();
             }
         }

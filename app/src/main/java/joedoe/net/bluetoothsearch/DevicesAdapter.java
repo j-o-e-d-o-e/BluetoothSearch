@@ -1,5 +1,6 @@
 package joedoe.net.bluetoothsearch;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -11,6 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.util.List;
+import java.util.Objects;
 
 public class DevicesAdapter extends ArrayAdapter<Device> {
     private static final String TAG = "DevicesAdapter";
@@ -23,13 +25,14 @@ public class DevicesAdapter extends ArrayAdapter<Device> {
         this.resource = resource;
     }
 
+    @SuppressLint("ViewHolder")
     @NonNull
     @Override
     public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
         Log.d(TAG, "get view");
-        String id = getItem(position).getId();
-        String name = getItem(position).getName();
-        String mac = getItem(position).getMac();
+        String id = Objects.requireNonNull(getItem(position)).getId();
+        String name = Objects.requireNonNull(getItem(position)).getName();
+        String mac = Objects.requireNonNull(getItem(position)).getMac();
 
         LayoutInflater inflater = LayoutInflater.from(ctx);
         convertView = inflater.inflate(resource, parent, false);
